@@ -31,16 +31,19 @@ class WayPointServer(Node):
         self.max_time_inside_sphere = 0
         self.point_in_sphere_start_time = None
         self.dtime = 0
-        self.drone_position = np.array([0.0, 0.0, 0.0, 0.0], dtype=np.float64)  # x, y, z, yaw
-        self.setpoint = np.array([0.0, 0.0, 27.0, 0.0], dtype=np.float64)  # Target position
+        self.drone_position = [0.0, 0.0, 0.0, 0.0]  # x, y, z, yaw
+        self.setpoint = [0.0, 0.0, 27.0, 0.0]  # Target position
 
         self.cmd = SwiftMsgs()
-        self.reset_command()
+        self.cmd.rc_roll = 1500
+        self.cmd.rc_pitch = 1500
+        self.cmd.rc_yaw = 1500
+        self.cmd.rc_throttle = 1500
 
         # PID values (Kp, Ki, Kd) for pitch, roll, yaw, throttle
-        self.Kp = np.array([0.0, 0.0, 0.0, 0.0], dtype=np.float64)
-        self.Ki = np.array([0.0, 0.0, 0.0, 0.0], dtype=np.float64)
-        self.Kd = np.array([0.0, 0.0, 0.0, 0.0], dtype=np.float64)
+        self.Kp = [0.0, 0.0, 0.0, 0.0]
+        self.Ki = [0.0, 0.0, 0.0, 0.0]
+        self.Kd = [0.0, 0.0, 0.0, 0.0]
 
         self.pid_error = PIDError()
         self.sample_time = 0.060  # 60 ms
@@ -174,14 +177,16 @@ class WayPointServer(Node):
 
     def is_drone_in_sphere(self, drone_pos, goal_handle, radius):
         """Check if the drone is within the target sphere."""
-        distance_squared = np.sum(
-            (drone_pos[:3] - np.array([
-                goal_handle.request.waypoint.position.x,
-                goal_handle.request.waypoint.position.y,
-                goal_handle.request.waypoint.position.z
-            ], dtype=np.float64)) ** 2
-        )
-        return distance_squared <= np.float64(radius) ** 2  # Ensure radius is a float
+        # distance_squared = np.sum(
+        #     (drone_pos[:3] - np.array([
+        #         goal_handle.request.waypoint.position.x,
+        #         goal_handle.request.waypoint.position.y,
+        #         goal_handle.request.waypoint.position.z
+        #     ], dtype=np.float64)) ** 2
+        # )
+
+        distance_squared = ((drone_pos[0] - goal_handle.request.waypoint.position.x)**2 + (drone_pos[1] - goal_handle.request.waypoint.position.y)**2 + (drone_pos[2] - goal_handle.request.waypoint.position.z)**2) 
+        return distance_squared <= (radius) ** 2  # Ensure radius is a float
 
 
 def main(args=None):
